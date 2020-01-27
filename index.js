@@ -1,11 +1,27 @@
-var http = require('http');
-//Exportacion global de la funcion info: var log = require('./modules/my-log'); 
-var {info} = require('./modules/my-log');
-var libs = require('../libs/lib');
-var {countries} = require('countries-list');
-var url = require('url');
-var querystring = require('querystring');
+const express = require('express');
 
+//Exportacion global de la funcion info: var log = require('./modules/my-log');
+const { info,error } = require('./src/modules/my-log');
+
+const { countries } = require('countries-list');
+
+const app = express();
+
+app.get('/', (request, response) => {
+  response.status(200).send('HELLO');
+});
+
+app.get('/info', (request, response) => {
+  response.send('INFO nodemon');
+});
+
+app.get('*', (request, response) => {
+  response.status(404).send('NOT FOUND');
+});
+
+
+
+/*
 var server = http.createServer(function (request, response) {
     
     var parsed = url.parse(request.url);
@@ -38,9 +54,8 @@ var server = http.createServer(function (request, response) {
         response.write('<html><body><p>NOT FOUND</p></body></html>');
         response.end();
     }
-  })
+  }) */
 
-server.listen(4000);
-
-console.log('running on 4000');
-
+app.listen(4000, function() {
+  console.log('running on 4000');
+});
