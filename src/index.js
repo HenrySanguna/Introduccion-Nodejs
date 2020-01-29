@@ -2,7 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 
-require.config();
+dotenv.config();
+
+console.log('MONGO', process.env.MONGO);
 
 const routesV1 = require('./routes/v1');
 // Exportacion global de la funcion info: var log = require('./modules/my-log');
@@ -16,6 +18,8 @@ app.use(bodyParser.json());
 
 routesV1(app);
 
-app.listen(4000, () => {
-  console.log('running on 4000');
+const PORT= process.env.PORT;
+
+app.listen(PORT, () => {
+  console.log(`running on ${PORT}`);
 });
