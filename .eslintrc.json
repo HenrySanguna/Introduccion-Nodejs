@@ -18,6 +18,7 @@
         "arrow-parens": "off",
         "comma-dangle": "off",
         "linebreak-style":"off",
-        "spaced-comment":"off"
+        "spaced-comment":"off",
+        "object-curly-newline": "off"
     }
 }
