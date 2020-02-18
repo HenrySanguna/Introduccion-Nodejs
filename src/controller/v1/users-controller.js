@@ -1,9 +1,8 @@
 const bcrypt = require('bcryptjs');
-const users = require('../../mongo/models/users')
+const users = require('../../mongo/models/users');
 
 const createUser = async (req, res) => {
   try {
-
     const { username, password, email, data } = req.body;
 
     const hash = await bcrypt.hash(password, 15);
@@ -32,8 +31,17 @@ const deleteUser = (req, res) => {
 const getUser = (req, res) => {
   res.send({ status: 'ok', data: [] });
 };
-const updateUser = (req, res) => {
-  res.send({ status: 'ok', message: 'user updated' });
+const updateUser = async (req, res) => {
+  try {
+    const { username, email, data, userId } = req.body;
+    await users.findOneAndUpdate(userId, {
+      username
+    });
+    res.send({ status: 'ok', message: 'user updated' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ status: 'ERROR', message: 'user updated' });
+  }
 };
 
 module.exports = {

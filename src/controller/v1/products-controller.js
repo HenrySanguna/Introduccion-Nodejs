@@ -19,7 +19,7 @@ const getProduct = async (req, res) => {
   try {
     const products = await Products.find({
       price: { $gt: 100 }
-    }).populate('user', 'username email data role').select('title descr price');
+    }).select('title descr price').populate('user', 'username email data role');
     res.send({ status: 'OK', data: products });
   } catch (e) {
     console.log('GetProduct error:', e);
