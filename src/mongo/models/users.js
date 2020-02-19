@@ -10,7 +10,7 @@ const userSchema = new Schema({
   data:{
     type: { age: Number, isMale: Boolean }
   },
-  role: { type: String, enum: ['admin', 'seller'], default: 'seller'}
+  role: { type: String, enum: ['admin', 'seller'], default: 'seller' }
 });
 
 const model = mongoose.model('User', userSchema);
