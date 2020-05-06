@@ -1,5 +1,9 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const users = require('../../mongo/models/users');
+const products = require('../../mongo/models/products');
+
+const expiresIn = 60 * 20;
 
 const login = async (req, res) => {
   try {
@@ -8,7 +12,12 @@ const login = async (req, res) => {
     if (user) {
       const isOk = await bcrypt.compare(password, user.password);
       if (isOk) {
-        res.send({ status: 'OK', data: {} });
+        const token = jwt.sign(
+          { userId: user._id, role: user.role },
+          process.env.JWT_SECRET,
+          { expiresIn }
+        );
+        res.send({ status: 'OK', data: { token, expiresIn } });
       } else {
         res.status(403).send({ status: 'INVALID_PASSWORD', message: '' });
       }
@@ -30,36 +39,58 @@ const createUser = async (req, res) => {
       username, // username: username
       email,
       data,
-      password: hash
+      password: hash,
     });
     console.log('FIN', hash);
 
     res.send({ status: 'ok', message: 'user created' });
   } catch (error) {
     if (error.code && error.code === 11000) {
-      res.status(400).send({ status: 'DUPLICATED_VALUES', message: error.keyValue });
+      res
+        .status(400)
+        .send({ status: 'DUPLICATED_VALUES', message: error.keyValue });
       return;
     }
     // console.log('error createuser', error);
     res.status(505).send({ status: 'Error', message: error.message });
   }
 };
-const deleteUser = (req, res) => {
-  res.send({ status: 'ok', message: 'user delete' });
+const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) {
+      throw new Error('missing param userId');
+    }
+    await users.findByIdAndDelete(userId);
+    await products.deleteMany({ user: userId });
+    res.send({ status: 'ok', message: 'user delete' });
+  } catch (e) {
+    res.status(500).send({ status: 'ERROR', message: e.message });
+  }
 };
-const getUser = (req, res) => {
-  res.send({ status: 'ok', data: [] });
+const getUser = async (req, res) => {
+  try {
+    const user = await users.find().select({ password: 0, __v: 0, role: 0 });
+    res.send({ status: 'ok', data: user });
+  } catch (e) {
+    res.status(500).send({ status: 'ERROR', message: e.message });
+  }
 };
 const updateUser = async (req, res) => {
   try {
-    const { username, email, data, userId } = req.body;
-    await users.findByIdAndUpdate(userId, {
-      username, email, data
+    console.log('req.sessionData', req.sessionData.userId);
+    const { username, email, data } = req.body;
+    await users.findByIdAndUpdate(req.sessionData.userId, {
+      username,
+      email,
+      data,
     });
     res.send({ status: 'ok', message: 'user updated' });
   } catch (error) {
     if (error.code && error.code === 11000) {
-      res.status(400).send({ status: 'DUPLICATED_VALUES', message: error.keyValue });
+      res
+        .status(400)
+        .send({ status: 'DUPLICATED_VALUES', message: error.keyValue });
       return;
     }
     res.status(500).send({ status: 'ERROR', message: 'not updated' });
@@ -71,5 +102,5 @@ module.exports = {
   deleteUser,
   getUser,
   updateUser,
-  login
+  login,
 };
